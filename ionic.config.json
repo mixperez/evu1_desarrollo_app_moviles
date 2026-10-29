@@ -1,0 +1,7 @@
+{
+  "name": "evaluacion1_mobile",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
