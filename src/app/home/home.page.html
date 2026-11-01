@@ -1,21 +1,129 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title> Blank </ion-title>
+<ion-header class="ion-no-border">
+  <ion-toolbar class="app-toolbar">
+    <ion-title>
+      <span class="app-brand">
+        <ion-icon name="leaf-outline" aria-hidden="true"></ion-icon>
+        Mis tareas
+      </span>
+    </ion-title>
+
+    <ion-buttons slot="end">
+      <ion-badge class="task-counter">{{ tasks().length }}</ion-badge>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" class="page-content">
+  <div class="page">
+    <section class="hero" aria-labelledby="page-heading">
+      <p class="hero-kicker">{{ editingTaskId() ? 'Modo edición' : 'Organiza tu día' }}</p>
+      <h1 id="page-heading">
+        @if (editingTaskId()) { Edita tu <span class="hero-accent">tarea</span> } @else { ¿Qué tienes
+        <span class="hero-accent">pendiente</span>? }
+      </h1>
+      <p class="hero-text">
+        @if (editingTaskId()) { Actualiza el título o la descripción y guarda los cambios. } @else { Agrega tus tareas y
+        mantenlas a la vista. Simple, rápido y sin distracciones. }
+      </p>
+    </section>
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>
-      Start with Ionic
-      <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a>
+    <ion-card class="form-card">
+      <ion-card-content>
+        <form [formGroup]="taskForm" (ngSubmit)="saveTask()" novalidate>
+          <ion-input
+            formControlName="title"
+            label="Título"
+            labelPlacement="stacked"
+            placeholder="Ej: Preparar la evaluación de móviles"
+            fill="outline"
+            maxlength="80"
+            autocomplete="off"
+            [class.ion-invalid]="isFieldInvalid('title')"
+            [class.ion-touched]="taskForm.controls.title.touched"
+            errorText="El título no puede estar vacío."
+          ></ion-input>
+
+          <ion-textarea
+            formControlName="description"
+            label="Descripción"
+            labelPlacement="stacked"
+            placeholder="Ej: Repasar los componentes de Ionic y el CRUD"
+            fill="outline"
+            [autoGrow]="true"
+            [rows]="3"
+            maxlength="200"
+            [counter]="true"
+            [class.ion-invalid]="isFieldInvalid('description')"
+            [class.ion-touched]="taskForm.controls.description.touched"
+            errorText="La descripción no puede estar vacía."
+          ></ion-textarea>
+
+          <div class="form-actions">
+            <ion-button type="submit" expand="block" [disabled]="taskForm.invalid">
+              <ion-icon
+                slot="start"
+                [name]="editingTaskId() ? 'checkmark-circle-outline' : 'add-outline'"
+                aria-hidden="true"
+              ></ion-icon>
+              {{ editingTaskId() ? 'Guardar cambios' : 'Agregar tarea' }}
+            </ion-button>
+
+            @if (editingTaskId()) {
+            <ion-button type="button" expand="block" fill="clear" color="light" (click)="cancelEdit()">
+              <ion-icon slot="start" name="close-outline" aria-hidden="true"></ion-icon>
+              Cancelar edición
+            </ion-button>
+            }
+          </div>
+        </form>
+      </ion-card-content>
+    </ion-card>
+
+    @if (statusMessage()) {
+    <p class="status-message" role="status">
+      <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+      {{ statusMessage() }}
     </p>
+    }
+
+    <div class="list-heading">
+      <h2>Tus tareas</h2>
+      <span class="list-count">{{ tasks().length }} {{ tasks().length === 1 ? 'tarea' : 'tareas' }}</span>
+    </div>
+
+    @if (tasks().length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon">
+        <ion-icon name="leaf-outline" aria-hidden="true"></ion-icon>
+      </div>
+      <h3>Aún no tienes tareas</h3>
+      <p>Cuando agregues la primera, este espacio se llenará de pequeños pendientes.</p>
+    </div>
+    } @else {
+    <ion-list class="task-list" lines="none">
+      @for (task of tasks(); track task.id; let index = $index) {
+      <ion-item class="task-item" [class.task-item--editing]="task.id === editingTaskId()">
+        <div slot="start" class="task-index" aria-hidden="true">{{ index + 1 }}</div>
+
+        <ion-label class="ion-text-wrap">
+          <h2>{{ task.title }}</h2>
+          <p>{{ task.description }}</p>
+        </ion-label>
+
+        <div class="task-actions" slot="end">
+          <ion-button fill="clear" color="primary" (click)="startEdit(task)" aria-label="Editar tarea">
+            <ion-icon slot="icon-only" name="create-outline" aria-hidden="true"></ion-icon>
+          </ion-button>
+
+          <ion-button fill="clear" color="danger" (click)="confirmDelete(task)" aria-label="Eliminar tarea">
+            <ion-icon slot="icon-only" name="trash-outline" aria-hidden="true"></ion-icon>
+          </ion-button>
+        </div>
+      </ion-item>
+      }
+    </ion-list>
+    }
+
+    <footer class="app-footer">© 2026 Mis Tareas. Todos los derechos reservados.</footer>
   </div>
 </ion-content>
